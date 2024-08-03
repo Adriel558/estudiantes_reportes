@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 public class studentDAO {
+
     private Connection connection;
 
     public studentDAO(Connection connection) {
@@ -122,6 +123,20 @@ public class studentDAO {
         return documentos;
     }
 
+    public List<Student> getEstudiantesByEstado(String estado) throws SQLException {
+        List<Student> estudiantes = new ArrayList<>();
+        String query = "SELECT * FROM estudiantes e JOIN estados s ON e.estado_id = s.id WHERE s.nombre = ?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, estado);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Student estudiante = extractEstudianteFromResultSet(resultSet);
+                estudiantes.add(estudiante);
+            }
+        }
+        return estudiantes;
+    }
+
     private Student extractEstudianteFromResultSet(ResultSet resultSet) throws SQLException {
         int id = resultSet.getInt("id");
         String nombre = resultSet.getString("nombre");
@@ -130,15 +145,15 @@ public class studentDAO {
         int idEstado = resultSet.getInt("estado_id");
         int idEstadoCivil = resultSet.getInt("estado_civil_id");
         int idDocumento = resultSet.getInt("documento_id");
-        
+
         Status SelectedStatus = getStatusById(idEstado);
         CivilStatus SelectedCivilStatus = getCivilStatusById(idEstadoCivil);
         Document selectedDocument = getDocumentById(idDocumento);
 
         return new Student(id, nombre, apellido, (java.sql.Date) fechaNacimiento, SelectedStatus, SelectedCivilStatus, selectedDocument);
     }
-    
-    private Status getStatusById(int id) throws SQLException{
+
+    private Status getStatusById(int id) throws SQLException {
         String query = "SELECT * FROM estados WHERE id=?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, id);
@@ -149,8 +164,8 @@ public class studentDAO {
         }
         return null;
     }
-    
-    private CivilStatus getCivilStatusById(int id) throws SQLException{
+
+    private CivilStatus getCivilStatusById(int id) throws SQLException {
         String query = "SELECT * FROM estado_civil WHERE id=?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, id);
@@ -161,8 +176,8 @@ public class studentDAO {
         }
         return null;
     }
-    
-    private Document getDocumentById(int id) throws SQLException{
+
+    private Document getDocumentById(int id) throws SQLException {
         String query = "SELECT * FROM documentos WHERE id=?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, id);
@@ -173,26 +188,24 @@ public class studentDAO {
         }
         return null;
     }
-    
-    private Status extratEstatusFronResultSet(ResultSet resultSet)throws SQLException{
+
+    private Status extratEstatusFronResultSet(ResultSet resultSet) throws SQLException {
         int id = resultSet.getInt("id");
         String nombre = resultSet.getString("nombre");
-        return new Status(id,nombre);
+        return new Status(id, nombre);
     }
-    
-    private CivilStatus extratCivilEstatusFronResultSet(ResultSet resultSet)throws SQLException{
+
+    private CivilStatus extratCivilEstatusFronResultSet(ResultSet resultSet) throws SQLException {
         int id = resultSet.getInt("id");
         String nombre = resultSet.getString("estado");
-        return new CivilStatus(id,nombre);
+        return new CivilStatus(id, nombre);
     }
-    
-    private Document extratDocumentFronResultSet(ResultSet resultSet)throws SQLException{
+
+    private Document extratDocumentFronResultSet(ResultSet resultSet) throws SQLException {
         int id = resultSet.getInt("id");
         String nombre = resultSet.getString("tipo");
         String numero = resultSet.getString("numero");
-        return new Document(id,nombre, numero);
+        return new Document(id, nombre, numero);
     }
-    
-    
-   
+
 }
